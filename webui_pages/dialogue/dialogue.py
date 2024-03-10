@@ -128,15 +128,15 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
 
         def on_mode_change():
             mode = st.session_state.dialogue_mode
-            text = f"已切换到 {mode} 模式。"
-            if mode == "知识库问答":
+            text = f"Switched to {mode}"
+            if mode == "KB Chat":
                 cur_kb = st.session_state.get("selected_kb")
                 if cur_kb:
                     text = f"{text} 当前知识库： `{cur_kb}`。"
             st.toast(text)
 
         dialogue_modes = ["LLM 对话",
-                          "知识库问答",
+                          "KB Chat",
                           "文件对话",
                           "搜索引擎问答",
                           "自定义Agent问答",
@@ -202,7 +202,7 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
             "LLM 对话": "llm_chat",
             "自定义Agent问答": "agent_chat",
             "搜索引擎问答": "search_engine_chat",
-            "知识库问答": "knowledge_base_chat",
+            "KB Chat": "knowledge_base_chat",
             "文件对话": "knowledge_base_chat",
         }
         prompt_templates_kb_list = list(PROMPT_TEMPLATES[index_prompt[dialogue_mode]].keys())
@@ -226,25 +226,25 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
         history_len = st.number_input("History:", 0, 20, HISTORY_LEN)
 
         def on_kb_change():
-            st.toast(f"已加载知识库： {st.session_state.selected_kb}")
+            st.toast(f"Loaded KB: {st.session_state.selected_kb}")
 
-        if dialogue_mode == "知识库问答":
-            with st.expander("知识库配置", True):
+        if dialogue_mode == "KB Chat":
+            with st.expander("KB Config", True):
                 kb_list = api.list_knowledge_bases()
                 index = 0
                 if DEFAULT_KNOWLEDGE_BASE in kb_list:
                     index = kb_list.index(DEFAULT_KNOWLEDGE_BASE)
                 selected_kb = st.selectbox(
-                    "请选择知识库：",
+                    "Select KB: ",
                     kb_list,
                     index=index,
                     on_change=on_kb_change,
                     key="selected_kb",
                 )
-                kb_top_k = st.number_input("匹配知识条数：", 1, 20, VECTOR_SEARCH_TOP_K)
+                kb_top_k = st.number_input("Matching count: ", 1, 20, VECTOR_SEARCH_TOP_K)
 
                 ## Bge 模型会超过1
-                score_threshold = st.slider("知识匹配分数阈值：", 0.0, 2.0, float(SCORE_THRESHOLD), 0.01)
+                score_threshold = st.slider("KB matching threshold: ", 0.0, 2.0, float(SCORE_THRESHOLD), 0.01)
         elif dialogue_mode == "文件对话":
             with st.expander("文件对话配置", True):
                 files = st.file_uploader("上传知识文件：",
@@ -364,10 +364,10 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
                         chat_box.update_msg(text, element_index=1)
                 chat_box.update_msg(ans, element_index=0, streaming=False)
                 chat_box.update_msg(text, element_index=1, streaming=False)
-            elif dialogue_mode == "知识库问答":
+            elif dialogue_mode == "KB Chat":
                 chat_box.ai_say([
-                    f"正在查询知识库 `{selected_kb}` ...",
-                    Markdown("...", in_expander=True, title="知识库匹配结果", state="complete"),
+                    f"Querying `{selected_kb}` ...",
+                    Markdown("...", in_expander=True, title="KB matching results", state="complete"),
                 ])
                 text = ""
                 for d in api.knowledge_base_chat(prompt,

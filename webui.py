@@ -26,11 +26,11 @@ if __name__ == "__main__":
     )
 
     pages = {
-        "对话": {
+        "Chat": {
             "icon": "chat",
             "func": dialogue_page,
         },
-        "知识库管理": {
+        "KB Manage": {
             "icon": "hdd-stack",
             "func": knowledge_base_page,
         },
@@ -45,7 +45,7 @@ if __name__ == "__main__":
             use_column_width=True
         )
         st.caption(
-            f"""<p align="right">当前版本：{VERSION}</p>""",
+            f"""<p align="right">Version: {VERSION}</p>""",
             unsafe_allow_html=True,
         )
         options = list(pages)

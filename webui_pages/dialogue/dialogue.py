@@ -122,7 +122,7 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
         index = 0
         if st.session_state.get("cur_conv_name") in conv_names:
             index = conv_names.index(st.session_state.get("cur_conv_name"))
-        conversation_name = st.selectbox("当前会话：", conv_names, index=index)
+        conversation_name = st.selectbox("Current Session:", conv_names, index=index)
         chat_box.use_chat_name(conversation_name)
         conversation_id = st.session_state["conversation_ids"][conversation_name]
 
@@ -141,7 +141,7 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
                           "搜索引擎问答",
                           "自定义Agent问答",
                           ]
-        dialogue_mode = st.selectbox("请选择对话模式：",
+        dialogue_mode = st.selectbox("Select Chat Mode:",
                                      dialogue_modes,
                                      index=0,
                                      on_change=on_mode_change,
@@ -177,7 +177,7 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
             index = llm_models.index(cur_llm_model)
         else:
             index = 0
-        llm_model = st.selectbox("选择LLM模型：",
+        llm_model = st.selectbox("Select LLM:",
                                  llm_models,
                                  index,
                                  format_func=llm_model_format_func,
@@ -215,7 +215,7 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
             st.toast(text)
 
         prompt_template_select = st.selectbox(
-            "请选择Prompt模板：",
+            "Select Prompt Template:",
             prompt_templates_kb_list,
             index=0,
             on_change=prompt_change,
@@ -223,7 +223,7 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
         )
         prompt_template_name = st.session_state.prompt_template_select
         temperature = st.slider("Temperature：", 0.0, 2.0, TEMPERATURE, 0.05)
-        history_len = st.number_input("历史对话轮数：", 0, 20, HISTORY_LEN)
+        history_len = st.number_input("History:", 0, 20, HISTORY_LEN)
 
         def on_kb_change():
             st.toast(f"已加载知识库： {st.session_state.selected_kb}")
@@ -274,7 +274,7 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
     # Display chat messages from history on app rerun
     chat_box.output_messages()
 
-    chat_input_placeholder = "请输入对话内容，换行请使用Shift+Enter。输入/help查看自定义命令 "
+    chat_input_placeholder = "Chat box here. Shift+Enter for new line. /help for help "
 
     def on_feedback(
             feedback,
@@ -441,14 +441,14 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
         cols = st.columns(2)
         export_btn = cols[0]
         if cols[1].button(
-                "清空对话",
+                "Reset History",
                 use_container_width=True,
         ):
             chat_box.reset_history()
             st.rerun()
 
     export_btn.download_button(
-        "导出记录",
+        "Export",
         "".join(chat_box.export2md()),
         file_name=f"{now:%Y-%m-%d %H.%M}_对话记录.md",
         mime="text/markdown",

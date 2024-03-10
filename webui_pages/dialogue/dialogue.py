@@ -135,11 +135,11 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
                     text = f"{text} 当前知识库： `{cur_kb}`。"
             st.toast(text)
 
-        dialogue_modes = ["LLM 对话",
+        dialogue_modes = ["LLM Chat",
                           "KB Chat",
-                          "文件对话",
-                          "搜索引擎问答",
-                          "自定义Agent问答",
+                          "File Chat",
+                          "Search Engine Chat",
+                          "Agent Chat",
                           ]
         dialogue_mode = st.selectbox("Select Chat Mode:",
                                      dialogue_modes,
@@ -199,11 +199,11 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
                     st.session_state["prev_llm_model"] = llm_model
 
         index_prompt = {
-            "LLM 对话": "llm_chat",
-            "自定义Agent问答": "agent_chat",
-            "搜索引擎问答": "search_engine_chat",
+            "LLM Chat": "llm_chat",
+            "Agent Chat": "agent_chat",
+            "Search Engine Chat": "search_engine_chat",
             "KB Chat": "knowledge_base_chat",
-            "文件对话": "knowledge_base_chat",
+            "File Chat": "knowledge_base_chat",
         }
         prompt_templates_kb_list = list(PROMPT_TEMPLATES[index_prompt[dialogue_mode]].keys())
         prompt_template_name = prompt_templates_kb_list[0]
@@ -245,7 +245,7 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
 
                 ## Bge 模型会超过1
                 score_threshold = st.slider("KB matching threshold: ", 0.0, 2.0, float(SCORE_THRESHOLD), 0.01)
-        elif dialogue_mode == "文件对话":
+        elif dialogue_mode == "File Chat":
             with st.expander("文件对话配置", True):
                 files = st.file_uploader("上传知识文件：",
                                          [i for ls in LOADER_DICT.values() for i in ls],
@@ -257,7 +257,7 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
                 score_threshold = st.slider("知识匹配分数阈值：", 0.0, 2.0, float(SCORE_THRESHOLD), 0.01)
                 if st.button("开始上传", disabled=len(files) == 0):
                     st.session_state["file_chat_id"] = upload_temp_docs(files, api)
-        elif dialogue_mode == "搜索引擎问答":
+        elif dialogue_mode == "Search Engine Chat":
             search_engine_list = api.list_search_engines()
             if DEFAULT_SEARCH_ENGINE in search_engine_list:
                 index = search_engine_list.index(DEFAULT_SEARCH_ENGINE)
@@ -299,7 +299,7 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
         else:
             history = get_messages_history(history_len)
             chat_box.user_say(prompt)
-            if dialogue_mode == "LLM 对话":
+            if dialogue_mode == "LLM Chat":
                 chat_box.ai_say("正在思考...")
                 text = ""
                 message_id = ""
@@ -326,7 +326,7 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
                                        on_submit=on_feedback,
                                        kwargs={"message_id": message_id, "history_index": len(chat_box.history) - 1})
 
-            elif dialogue_mode == "自定义Agent问答":
+            elif dialogue_mode == "Agent Chat":
                 if not any(agent in llm_model for agent in SUPPORT_AGENT_MODEL):
                     chat_box.ai_say([
                         f"正在思考... \n\n <span style='color:red'>该模型并没有进行Agent对齐，请更换支持Agent的模型获得更好的体验！</span>\n\n\n",
@@ -385,7 +385,7 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
                         chat_box.update_msg(text, element_index=0)
                 chat_box.update_msg(text, element_index=0, streaming=False)
                 chat_box.update_msg("\n\n".join(d.get("docs", [])), element_index=1, streaming=False)
-            elif dialogue_mode == "文件对话":
+            elif dialogue_mode == "File Chat":
                 if st.session_state["file_chat_id"] is None:
                     st.error("请先上传文件再进行对话")
                     st.stop()
@@ -409,7 +409,7 @@ def dialogue_page(api: ApiRequest, is_lite: bool = False):
                         chat_box.update_msg(text, element_index=0)
                 chat_box.update_msg(text, element_index=0, streaming=False)
                 chat_box.update_msg("\n\n".join(d.get("docs", [])), element_index=1, streaming=False)
-            elif dialogue_mode == "搜索引擎问答":
+            elif dialogue_mode == "Search Engine Chat":
                 chat_box.ai_say([
                     f"正在执行 `{search_engine}` 搜索...",
                     Markdown("...", in_expander=True, title="网络搜索结果", state="complete"),
